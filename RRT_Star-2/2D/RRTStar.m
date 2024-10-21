@@ -18,6 +18,8 @@
 % 7. Add q_new to node list.
 % 8. Continue until maximum number of nodes is reached or goal is hit.
 
+% REPLACE Shalini's RRT* code with MATLAB in-built RRT* function like this: https://www.mathworks.com/help/nav/ref/plannerrrtstar.html
+
 clearvars
 close all
 
