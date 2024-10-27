@@ -43,8 +43,8 @@ hold on
 
 %Call to RRT Function 
 % Define state space and validator for your RRT planner
-bounds = [0, x_max; 0, y_max; -pi, pi];
-stateSpace = stateSpaceSE2(bounds);  
+bounds = [0, x_max; 0, y_max; -pi, pi]; %% orientation 360 degrees 
+stateSpace = stateSpaceSE2(bounds);   %% within bounds and does not collide, need 
 stateVal = validatorOccupancyMap(stateSpace);
 
 % Create the RRT planner
@@ -144,7 +144,7 @@ for i = 1:1:length(collide) -1
           [val, idx] = min(ndist);
           q_near1 = nodes(idx);
         
-        %% 
+         
         
            q_new1.coord = steer(q_rand1, q_near1.coord, val, EPS1);        
            if noCollision(q_rand1, q_near1.coord, bounding_box)
