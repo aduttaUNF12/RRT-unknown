@@ -25,7 +25,7 @@ close all
 x_max = 100;
 y_max = 100;
 obstacle = [50,20,20,40];
-EPS = 1;
+EPS = 0.3;
 numNodes = 1000;        
 
 %Arbitrarly choosing start and goal nodes 
@@ -58,8 +58,8 @@ sv.ValidationDistance = 0.01;
 % Create the RRT planner
 planner = plannerRRTStar(ss,sv, ...
           ContinueAfterGoalReached=true, ...
-          MaxIterations=2500, ...
-          MaxConnectionDistance=0.3);
+          MaxIterations=numNodes, ...
+          MaxConnectionDistance=EPS);
 
 
 start = [0.5 0.5 0];
