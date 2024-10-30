@@ -21,19 +21,18 @@
 clearvars
 close all
 
-%Creating graph and obstacle 
-x_max = 100;
-y_max = 100;
-obstacle = [50,20,20,40];
-EPS = 0.3;
-numNodes = 1000;        
+%% variables 
+% x_max = 100;
+% y_max = 100;
+% obstacle = [50,20,20,40];
+EPS = .3;
+numNodes = 2500;  
+validationDist = 0.01;
 
-%Arbitrarly choosing start and goal nodes 
-q_start.coord = [0 0];
-q_start.cost = 0;
-q_start.parent = 0;
-q_goal.coord = [99 99];
-q_goal.cost = 0;
+%% create the map
+%map = circular_occu_map(100,20,[50, 50],[10, 5],[50, 50]);
+load exampleMaps.mat
+map = occupancyMap(simpleMap,10);
 
 %Creating figure for visualization 
 % figure(1)
@@ -41,35 +40,13 @@ q_goal.cost = 0;
 % rectangle('Position',obstacle,'FaceColor',[0 .5 .5])
 % hold on
 
-%Call to RRT Function 
-% Define state space and validator for your RRT planner
-%bounds = [0, x_max; 0, y_max; -pi, pi]; %% orientation 360 degrees 
-ss = stateSpaceSE2;
-sv = validatorOccupancyMap(ss);
-
-load exampleMaps.mat
-map = occupancyMap(simpleMap,10);
-sv.Map = map;
-
-%stateSpace = stateSpaceSE2(bounds);   %% within bounds and does not collide, need 
-ss.StateBounds = [map.XWorldLimits; map.YWorldLimits; [-pi pi]];
-sv.ValidationDistance = 0.01;
-
-% Create the RRT planner
-planner = plannerRRTStar(ss,sv, ...
-          ContinueAfterGoalReached=true, ...
-          MaxIterations=numNodes, ...
-          MaxConnectionDistance=EPS);
-
-
+%% define S and G & call RRT* function
 start = [0.5 0.5 0];
-goal = [2.5 0.2 0]; 
+goal = [2.5 0.2 0];
 
-rng(100,'twister') % repeatable result
-[path, solutionInfo] = plan(planner, start, goal);
+[path, solutionInfo] = planPath(map,start,goal, EPS,numNodes,validationDist);
 
 %% Visualize the results.
-
 map.show
 hold on
 % Tree expansion
