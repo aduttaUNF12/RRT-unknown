@@ -1,0 +1,70 @@
+% eps >= 2
+% numNode > = 2500 (no less)
+% validationDist = did not matter
+
+clearvars
+close all
+
+%% variables 
+
+EPS = 2;
+numNodes = 2500;  
+validationDist = 10;
+
+%% create map
+gridSize = [10, 10];  
+resolution = 1;         
+map = binaryOccupancyMap(gridSize(1), gridSize(2), resolution);
+
+load exampleMaps.mat 
+vertex1 = [2, 3]; 
+vertex2 = [3, 5]; 
+vertex3 = [4, 3];
+    
+for x = 1:size(gridSize,1)     
+    for y = 1:size(gridSize,2)     
+        if inpolygon(x, y, [vertex1(1) vertex2(1) vertex3(1)], [vertex1(2) vertex2(2) vertex3(2)])     
+            setOccupancy(map, [x,y], 1);  
+        end
+       
+    end
+    
+end
+
+
+%% define S and G & call RRT* function
+start = [0.5 0.5 0];
+goal = [9.5 9.5 0];
+
+[path, solutionInfo] = planPath(map,start,goal, EPS,numNodes,validationDist);
+
+%% Visualize the results.
+show(map); 
+hold on;
+% triangl outline
+plot([vertex1(1), vertex2(1), vertex3(1), vertex1(1)], ...
+     [vertex1(2), vertex2(2), vertex3(2), vertex1(2)], 'r-', 'LineWidth', 2);  
+
+% Tree expansion
+plot(solutionInfo.TreeData(:,1),solutionInfo.TreeData(:,2),'g.-');
+% Draw path
+plot(path.States(:,1),path.States(:,2),'r-','LineWidth',2);
+
+hold off; 
+
+function [path, solutionInfo] = planPath(map,start,goal, EPS, numNodes, validationDist)
+% Define state space and validator for your RRT planner
+ss = stateSpaceSE2;
+sv = validatorOccupancyMap(ss);
+sv.Map = map;
+ss.StateBounds = [map.XWorldLimits; map.YWorldLimits; [-pi pi]];
+sv.ValidationDistance = validationDist;
+
+% Create the RRT planner
+planner = plannerRRTStar(ss,sv, ...
+          ContinueAfterGoalReached=true, ...
+          MaxIterations=numNodes, ...
+          MaxConnectionDistance=EPS);
+rng(100,'twister') % repeatable result
+[path, solutionInfo] = plan(planner, start, goal);
+end
