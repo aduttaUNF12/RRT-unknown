@@ -1,70 +1,57 @@
-% eps >= 2
-% numNode > = 2500 (no less)
-% validationDist = did not matter
+% Define grid size
+a = 100; % number of rows (height)
+b = 100; % number of columns (width)
 
-clearvars
-close all
-
-%% variables 
-
-EPS = 2;
-numNodes = 2500;  
-validationDist = 10;
-
-%% create map
-gridSize = [10, 10];  
-resolution = 1;         
-map = binaryOccupancyMap(gridSize(1), gridSize(2), resolution);
-
-load exampleMaps.mat 
-vertex1 = [2, 3]; 
-vertex2 = [3, 5]; 
-vertex3 = [4, 3];
-    
-for x = 1:size(gridSize,1)     
-    for y = 1:size(gridSize,2)     
-        if inpolygon(x, y, [vertex1(1) vertex2(1) vertex3(1)], [vertex1(2) vertex2(2) vertex3(2)])     
-            setOccupancy(map, [x,y], 1);  
-        end
-       
+% Create an occupancy map object
+map = occupancyMap(b, a); % Note: width first, then height
+[x, y] = meshgrid(1:b, 1:a);
+% Set all initial occupancies to 0 (optional, as it's already initialized to 0)
+for r = 1:a
+    for c = 1:b
+        setOccupancy(map, [c, r], 0); % Explicitly set to free space
     end
-    
 end
 
 
-%% define S and G & call RRT* function
-start = [0.5 0.5 0];
-goal = [9.5 9.5 0];
+% Define triangle vertices (row, column format)
+triangleVertices = [30, 40;   % Vertex 1 (y1, x1)
+                    50, 70;   % Vertex 2 (y2, x2)
+                    70, 40];  % Vertex 3 (y3, x3)
 
-[path, solutionInfo] = planPath(map,start,goal, EPS,numNodes,validationDist);
-
-%% Visualize the results.
-show(map); 
-hold on;
-% triangl outline
-plot([vertex1(1), vertex2(1), vertex3(1), vertex1(1)], ...
-     [vertex1(2), vertex2(2), vertex3(2), vertex1(2)], 'r-', 'LineWidth', 2);  
-
-% Tree expansion
-plot(solutionInfo.TreeData(:,1),solutionInfo.TreeData(:,2),'g.-');
-% Draw path
-plot(path.States(:,1),path.States(:,2),'r-','LineWidth',2);
-
-hold off; 
-
-function [path, solutionInfo] = planPath(map,start,goal, EPS, numNodes, validationDist)
-% Define state space and validator for your RRT planner
-ss = stateSpaceSE2;
-sv = validatorOccupancyMap(ss);
-sv.Map = map;
-ss.StateBounds = [map.XWorldLimits; map.YWorldLimits; [-pi pi]];
-sv.ValidationDistance = validationDist;
-
-% Create the RRT planner
-planner = plannerRRTStar(ss,sv, ...
-          ContinueAfterGoalReached=true, ...
-          MaxIterations=numNodes, ...
-          MaxConnectionDistance=EPS);
-rng(100,'twister') % repeatable result
-[path, solutionInfo] = plan(planner, start, goal);
+% Fill in the triangle area
+for r = 1:a
+    for c = 1:b
+        if isPointInTriangle(r, c, triangleVertices)
+            setOccupancy(map, [c, r], 1); % Mark as occupied
+        end
+    end
 end
+
+% Function to check if a point is inside a triangle
+function inside = isPointInTriangle(px, py, vertices)
+    % Extract triangle vertices
+    v1 = vertices(1, :);
+    v2 = vertices(2, :);
+    v3 = vertices(3, :);
+
+    % Compute area of the triangle
+    areaOrig = triangleArea(v1, v2, v3);
+
+    % Compute areas of sub-triangles
+    area1 = triangleArea([px, py], v2, v3);
+    area2 = triangleArea(v1, [px, py], v3);
+    area3 = triangleArea(v1, v2, [px, py]);
+
+    % A point is inside the triangle if the sum of the areas equals the original area
+    inside = (area1 + area2 + area3) == areaOrig;
+end
+
+% Function to calculate the area of a triangle given its vertices
+function area = triangleArea(v1, v2, v3)
+    area = abs((v1(1)*(v2(2)-v3(2)) + v2(1)*(v3(2)-v1(2)) + v3(1)*(v1(2)-v2(2))) / 2);
+end
+
+% Display the occupancy map
+figure;
+show(map);
+title('Occupancy Map with Triangular Obstacle');
