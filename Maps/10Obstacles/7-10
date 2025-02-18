@@ -1,0 +1,30 @@
+gridSize = 100;
+
+% Create figure
+figure;
+hold on;
+axis([0 gridSize 0 gridSize]); % Set axis limits
+xlabel('X Axis');
+ylabel('Y Axis');
+title('Occupancy Grid Map with Multiple Obstacles');
+
+% Define obstacles as [x, y, width, height]
+obstacles = [
+   
+    65, 25, 10, 50;   % Obstacle 7
+   
+];
+
+% Loop through and plot each obstacle
+for i = 1:size(obstacles, 1)
+    x = obstacles(i, 1);
+    y = obstacles(i, 2);
+    w = obstacles(i, 3);
+    h = obstacles(i, 4);
+    fill([x x+w x+w x x], [y y y+h y+h y], 'k'); % Create a black rectangle
+end
+
+% Set grid and appearance
+grid on;
+set(gca, 'XTick', 0:10:gridSize, 'YTick', 0:10:gridSize);
+hold off;
