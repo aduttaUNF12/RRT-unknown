@@ -1,4 +1,4 @@
-function [replannedSegment, solutionInfo,si,sj,s,g] = replanPathWithNewObstacle(simpleMap,originalPath,EPS,numNodes,validationDist,radius,rectCenter)
+function [replannedSegment, solutionInfo,si,sj,s,g,collisionDetected,sv] = replanPathWithNewObstacle(simpleMap,originalPath,EPS,numNodes,validationDist,radius,rectCenter)
 map = occupancyMap(simpleMap,10);
 newPath = [];
 Err =1;
@@ -29,9 +29,10 @@ for i = 1:size(originalPath.States, 1)
             nextPoint = originalPath.States(j, :);
             if ~checkCollision(map, nextPoint)
                 %g = nextPoint;
-                g= originalPath.States(j+Err, :);
+                g= originalPath.States(j, :);
                 break;
             end
+          
         end
 
         % If no safe point after the collision is found, exit the function
@@ -40,13 +41,11 @@ for i = 1:size(originalPath.States, 1)
         end
         %newmap1 = circular_occu_map(26,radius,center,rectSize,rectCenter);
         si = i-Err;
-        sj = j+Err;
+        sj = j;
         % Replan path from s' to g'
         mapsize =size(simpleMap);
         map = circular_occu_map_corrected(simpleMap,mapsize(1),radius,rectCenter,s, g);
-        [replannedSegment, solutionInfo] = planPath(map, s, g, EPS, numNodes, validationDist);
-
-      
+        [replannedSegment, solutionInfo,sv] = planPath(map, s, g, EPS, numNodes, validationDist);
         break;
     end
 end
@@ -55,5 +54,11 @@ end
 if ~collisionDetected
     solutionInfo = struct(); % Optional: can include any relevant info
     safepoint = originalPath.States(i, :);
-end
+     si = 1;
+     sj = size(originalPath.States, 1);
+     replannedSegment = originalPath;
+     s=originalPath.States(1,:);
+     g=originalPath.States(end,:);
+      sv=0;
+end 
 end
