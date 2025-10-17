@@ -158,7 +158,8 @@ end
             rectCenter = [rowC, colC];
 
             %% Local map inside circle
-            numNodesLocal  = ceil(pi * radiusCells^2 * Density);
+           % numNodesLocal  = ceil(pi * radiusCells^2 * Density);
+           numNodesLocal =numNodes;
             localSimpleMap = circular_occu_map_corrected(simpleMap, mapRows, radiusCells, rectCenter, s, g, res);
             localMap       = occupancyMap(localSimpleMap, res);
 
@@ -278,3 +279,4 @@ function localSimpleMap = circular_occu_map_corrected(simpleMap, Nrows, radiusCe
     localSimpleMap(s_r, s_c) = 0;
     localSimpleMap(g_r, g_c) = 0;
 end
+
