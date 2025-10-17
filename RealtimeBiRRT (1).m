@@ -10,8 +10,8 @@ successrate = zeros(1,10);
 for run = 1:1
     %% PARAMETERS 
     clearvars -except time pathLength successrate run;
-    EPS = 1;                % RRT* max connection distance
-    numNodes = 100*10^4;      % RRT* iterations on global plan
+    EPS = 3;                % RRT* max connection distance
+    numNodes = 2000;      % RRT* iterations on global plan
     validationDist = 0.1;    % state validator resolution (meters)
     obstaclenum = 6;
     tic;
@@ -279,4 +279,5 @@ function localSimpleMap = circular_occu_map_corrected(simpleMap, Nrows, radiusCe
     localSimpleMap(s_r, s_c) = 0;
     localSimpleMap(g_r, g_c) = 0;
 end
+
 
